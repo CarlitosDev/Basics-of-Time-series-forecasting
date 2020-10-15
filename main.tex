@@ -26,15 +26,14 @@ The information, and even the equations, I have taken from this excellent (reall
 
 \subsection{Intro}
 
-Idea of a time seies can be decomposed into a seasonal component $S_t$, a trend $T_t$ and a residual $R_t$:
-
+The idea behind this document is that a time series $y_t$ can be decomposed into a seasonal component $S_t$, a trend $T_t$ and a residual $R_t$:
 
 \begin{equation}
   y_t = T_t + S_{t} + R_t = S_t + A_t
 \label{eqn:basic_decomposition}
 \end{equation}
 
-The idea is that the seasonal component varies very little (some practitioners reduce the forecast to a seasonal na\"ive method is used for the seasonal component), so the focus is on predicting what is called the seasonalised component, $A_t = T_t  + R_t$.
+The seasonal component is expected to be quite steady (some practitioners reduce its forecast to a seasonal na\"ive method is used for the seasonal component), so the focus is on predicting what is called the seasonalised component, $A_t = T_t  + R_t$.
 
 Typically, a decomposition looks like this \url{https://otexts.com/fpp2/fpp_files/figure-html/fig-7-LevelTrendSeas-1.png}
 
@@ -122,13 +121,7 @@ The multiplicative method is preferred when the seasonal variations are changing
   s_{t} & = \gamma \frac{y_{t}}{(\ell_{t-1} + b_{t-1})} + (1 - \gamma)s_{t-m}
 \end{align*}
 
-
-\begin{align*}
-  \hat{y}_{t+h|t} &amp;= \ell_{t} + hb_{t} + s_{t+h-m(k+1)} \\
-  \ell_{t} &amp;= \alpha(y_{t} - s_{t-m}) + (1 - \alpha)(\ell_{t-1} + b_{t-1})\\
-  b_{t} &amp;= \beta^*(\ell_{t} - \ell_{t-1}) + (1 - \beta^*)b_{t-1}\\
-  s_{t} &amp;= \gamma (y_{t}-\ell_{t-1}-b_{t-1}) + (1-\gamma)s_{t-m},
-\end{align*}
-
+\section{Next steps}
+I am interested in how to use these techniques to include discrete effects such as cannibalisation.
 
 \end{document}
