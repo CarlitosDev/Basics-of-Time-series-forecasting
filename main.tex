@@ -1,0 +1,134 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Welcome to Overleaf --- just edit your LaTeX on the left,
+% and we'll compile it for you on the right. If you open the
+% 'Share' menu, you can invite other users to edit at the same
+% time. See www.overleaf.com/learn for more info. Enjoy!
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass{article}
+\usepackage[latin1]{inputenc}
+\usepackage{tikz}
+\usepackage{amssymb}
+\usepackage{mathtools}% Loads amsmath
+%\usepackage{amsmath}
+\usepackage{url}
+\usetikzlibrary{shapes,arrows}
+\begin{document}
+\pagestyle{empty}
+
+\section{Time Series}
+
+\subsection{Credits}
+
+The information, and even the equations, I have taken from this excellent (really good) resource \url{https://otexts.com/fpp2}
+
+\subsection{Intro}
+
+Idea of a time seies can be decomposed into a seasonal component $S_t$, a trend $T_t$ and a residual $R_t$:
+
+
+\begin{equation}
+  y_t = T_t + S_{t} + R_t = S_t + A_t
+\label{eqn:basic_decomposition}
+\end{equation}
+
+The idea is that the seasonal component varies very little (some practitioners reduce the forecast to a seasonal na\"ive method is used for the seasonal component), so the focus is on predicting what is called the seasonalised component, $A_t = T_t  + R_t$.
+
+Typically, a decomposition looks like this \url{https://otexts.com/fpp2/fpp_files/figure-html/fig-7-LevelTrendSeas-1.png}
+
+
+
+\subsection{Forecasting error}
+
+The prediction $\hat{y}_{t|t-1}$ has a residual, or error, defined as $e_t=y_t - \hat{y}_{t|t-1}$. The error of all of the predictions can be measured by the SSE, defined as 
+\begin{equation}
+ \text{SSE}=\sum_{t=1}^T(y_t - \hat{y}_{t|t-1})^2=\sum_{t=1}^Te_t^2
+ \label{eqn:error_sse}
+\end{equation}
+
+\subsection{Forecasting with Exponential Smoothing}
+
+\begin{equation}
+  \hat{y}_{T+1|T} = \alpha y_T + \alpha(1-\alpha) y_{T-1} + \alpha(1-\alpha)^2 y_{T-2}+ \cdots,   \tag{7.1}
+\label{eqn::exp_smoothing}
+\end{equation}
+
+\subsubsection{ES-Weighted average form}
+
+\begin{equation}
+\hat{y}_{T+1|T} =  \sum_{j=0}^{T-1} \alpha(1-\alpha)^j y_{T-j} + (1-\alpha)^T \ell_{0}
+\label{eqn::exp_smoothing_wa}
+\end{equation}
+where $\ell_{0}$ is the level, which is small for large T.
+
+\subsubsection{ES-Component form (\textit{level})}
+
+\begin{equation}
+\hat{y}_{t+h|t} = \ell_{t} = \alpha y_{t} + (1 - \alpha)\ell_{t-1}
+\label{eqn::exp_smoothing_cmp}
+\end{equation}
+
+
+\subsection{Holt's linear}
+
+\begin{equation}
+\hat{y}_{t+h|t} = \ell_{t} + hb_{t} = \underbrace{\alpha y_{t} + (1 - \alpha)(\ell_{t-1} + b_{t-1})}_\text{level} + h\underbrace{(\beta^*(\ell_{t} - \ell_{t-1}) + (1 -\beta^*)b_{t-1})}_\text{trend (slope)}
+\label{eqn:holts_linear}
+\end{equation}
+
+The trend term is constant and leads to overforecasting, motivating the development of methods that damp the trend.
+
+\subsection{Damped Holt's or Damped trend}
+
+Damped methods focus on decreasing the trend over time by using a damping parameter $0<\phi<1$. When $\phi=1$ is the plain Holt's. In practice, $0.8<\phi<1$ as lower levels are too decreasing.
+
+%\begin{equation}
+\begin{align*}
+  \hat{y}_{t+h|t} & = \ell_{t} + (\phi+\phi^2 + \dots + \phi^{h})b_{t} \\
+  \ell_{t} &= \alpha y_{t} + (1 - \alpha)(\ell_{t-1} + \phi b_{t-1}) \\
+  b_{t} & = \beta^*(\ell_{t} - \ell_{t-1}) + (1 -\beta^*)\phi b_{t-1}
+\end{align*}
+%\label{eqn:damped_holts}
+%\end{equation}
+
+\subsection{Holt-Winters' (Holt's with seasonality)}
+
+Holt-Winter's extends Holt's by including the seasonality term $S_{t+h-m(k+1)}$, where $m$ is the frequency of the seasonality ($m$=12 months in a year), and $k=(h-1)/m$ is an integer which ensures that the estimates of the seasonal indices come from the final year of the sample. TO-DO: some clarification on this.
+
+Some things to notice are that the level $\ell_{t}$ is calculated on the deseasonalised values of $y_t$ and the previous level plus the trend (non-seasonal), balanced by $\alpha$. The seasonal equation shows a weighted average between the current seasonal index, $(y_{t}-\ell_{t-1}-b_{t-1})$, and the seasonal index of the same season last year (i.e., $m$ time periods ago).
+
+The smoothing parameters and initial estimates for the components are normally estimated by minimising RMSE - which means that they are \textit{fixed}.
+
+\subsubsection{Additive Holt-Winters}
+Preferred when the seasonal variations are roughly constant through the series.
+
+
+\begin{align*}
+  \hat{y}_{t+h|t} & = \ell_{t} + hb_{t} + s_{t+h-m(k+1)} \\
+  \ell_{t} & = \alpha(y_{t} - s_{t-m}) + (1 - \alpha)(\ell_{t-1} + b_{t-1})\\
+  b_{t} & = \beta^*(\ell_{t} - \ell_{t-1}) + (1 - \beta^*)b_{t-1}\\
+  s_{t} & = \gamma (y_{t}-\ell_{t-1}-b_{t-1}) + (1-\gamma)s_{t-m},
+\end{align*}
+
+\subsubsection{Multiplicative Holt-Winters} 
+The multiplicative method is preferred when the seasonal variations are changing proportional to the level of the series. 
+
+\begin{align*}
+  \hat{y}_{t+h|t} & = (\ell_{t} + hb_{t})s_{t+h-m(k+1)} \\
+  \ell_{t} & = \alpha \frac{y_{t}}{s_{t-m}} + (1 - \alpha)(\ell_{t-1} + b_{t-1})\\
+  b_{t} & = \beta^*(\ell_{t}-\ell_{t-1}) + (1 - \beta^*)b_{t-1}                \\
+  s_{t} & = \gamma \frac{y_{t}}{(\ell_{t-1} + b_{t-1})} + (1 - \gamma)s_{t-m}
+\end{align*}
+
+
+\begin{align*}
+  \hat{y}_{t+h|t} &amp;= \ell_{t} + hb_{t} + s_{t+h-m(k+1)} \\
+  \ell_{t} &amp;= \alpha(y_{t} - s_{t-m}) + (1 - \alpha)(\ell_{t-1} + b_{t-1})\\
+  b_{t} &amp;= \beta^*(\ell_{t} - \ell_{t-1}) + (1 - \beta^*)b_{t-1}\\
+  s_{t} &amp;= \gamma (y_{t}-\ell_{t-1}-b_{t-1}) + (1-\gamma)s_{t-m},
+\end{align*}
+
+
+\end{document}
